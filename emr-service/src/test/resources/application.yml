@@ -1,0 +1,12 @@
+management:
+  server:
+    port: 9999
+  context-path: /actuator
+
+#mongodb
+spring:
+  data:
+    mongodb:
+      host: 127.0.0.1
+      port: 12345
+      database: gis
