@@ -59,7 +59,7 @@ Unit tests will be executed during the `test` lifecycle phase and will run as pa
 
 To access the application, open the following link in your browser:
 
-`http://localhost:8080/swagger-ui.html`
+`http://localhost:8082/swagger-ui.html`
 
 ### Access the Spring Boot Actuator endpoints
 
