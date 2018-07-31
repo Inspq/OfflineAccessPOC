@@ -1,0 +1,63 @@
+- hosts: emr-service
+  remote_user: root
+  vars:
+    oidc_client_id: "{{ emrservice_container_name | default('emrservice') }}"
+    oidc_client_name: Emr-Service
+    oidc_client_description: Demo app for offline access
+    emrservice_internal_port: 8082
+    emrservice_actuator_internal_port: 8081
+    oidc_client_redirect_uris:
+      - "{{ emrservice_url }}"
+      - "{{ emrservice_url }}/*"
+      - "http://localhost:{{ emrservice_external_port }}"
+      - "http://localhost:{{ emrservice_external_port }}/*"
+    keycloak_roles:
+      - name: user
+        description: "EMR Service User"
+        composite: false
+    docker_image: nexus3.inspq.qc.ca:5000/inspq/emr-service
+    docker_image_version: latest
+    
+  tasks:
+  - name: Create Keycloak client
+    keycloak_client:
+      url: "{{ keycloak_url }}"
+      username: "{{ keycloak_user }}"
+      password: "{{ keycloak_password }}"
+      realm: "{{ keycloak_realm | default ('master') }}"
+      clientId: "{{ oidc_client_id }}"
+      name: "{{ oidc_client_name }}"
+      description: "{{ oidc_client_description }}"
+      redirectUris : "{{ oidc_client_redirect_uris }}"
+      webOrigins: "{{ oidc_client_webOrigins | default([]) }}"
+      directAccessGrantsEnabled: true
+      roles: "{{ keycloak_roles }}"
+    register: keycloak_client
+    when:  keycloak_url is defined and keycloak_user is defined and keycloak_password is defined
+    run_once: true
+  
+  - name: Retrieve the client secret
+    set_fact:
+      oidc_client_secret: "{{keycloak_client.ansible_facts.clientSecret.value}}"
+    when:  keycloak_client is defined
+    run_once: true
+    
+  - name: Create Docker container 
+    docker_container:
+      name: "{{ container_name }}"
+      hostname: "{{ container_name }}"      
+      image: "{{ docker_image }}:{{ docker_image_version }}"
+      state: started
+      restart_policy: unless-stopped
+      ports:
+      - "{{ emrservice_external_port }}:{{ emrservice_internal_port }}"
+      - "{{ emrservice_actuator_external_port }}:{{ emrservice_actuator_internal_port }}"
+      env:
+        "KEYCLOAK_URL": "{{ keycloak_url }}"
+        "KEYCLOAK_REALM": "{{ keycloak_realm }}"
+        "KEYCLOAK_CLIENT_ID": "{{ oidc_client_id }}"
+        "KEYCLOAK_CLIENT_SECRET": "{{ oidc_client_secret }}"
+        "KEYCLOAK_ENABLED": "{{ keycloak_enabled | default(True) }}"
+        "DEBUG_PORT": "{{ debug_port | default(0) }}"
+  
+  
