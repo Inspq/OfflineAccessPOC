@@ -18,7 +18,7 @@ pipeline {
             post {
                 success {
                     archive '**/target/*.jar'
-                    junit '**/target/failsafe-reports/*.xml'
+                    // junit '**/target/failsafe-reports/*.xml'
                 }
             }
         }
