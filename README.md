@@ -23,54 +23,38 @@ here are the requirements:
 	A Springboot REST API secured by Keycloak Springboot adapter.
 	A username and password in Keycloak to log in the application. 
 	
+### Prerequisites for the demo
+* RH SSO 7.2.3 is up & running. For instructions, refer to [RH SSO Installation Guide](https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.2/html/server_installation_and_configuration_guide/installation#installing_rh_sso_from_a_zip_file). 
 	
-## Overview
+* Spring Boot API emr-service is up & running. For instructions, refer to [EMR API readme](emr-service/README.md)
 
-A Simple Spring Boot REST API to demonstrate offline access implementation of RH SSO (Keycloak) 
-
-## How do I use it?
-
-### Prerequisites
-
-- Java 8
-- Apache Maven
-
-### Build the application using Maven
-
-`mvn clean install`
-
-### Run the application
-
-Navigate to the `emr-service` directory, then run:
-
-`java -jar target/emr-service-1.0.0-SNAPSHOT.jar`
-
-#### Alternative
-
-`mvn spring-boot:run`
-
-### Running the Tests
-
-Unit tests will be executed during the `test` lifecycle phase and will run as part of any maven goal after `test`.
-
-`mvn package`
-
-### Access the application
-
-To access the application, open the following link in your browser:
-
-`http://localhost:8082/swagger-ui.html`
-
-### Access the Spring Boot Actuator endpoints
-
-To access the Spring Boot actuator endpoints, open the following link in your browser:
-
-health 
-`http://localhost:8081/actuator/health`
-
-info
-`http://localhost:8081/actuator/info`
+* Spring Boot Web Application emr-web is up & running. For instructions, refer to [EMR Web App readme](emr-web/README.md)
 	
+### Demo of offline access implementation in RH SSO
+Follow the below steps for the RH SSO offline access demo
+* Create a new realm **demo** by importing demo-realm.json in [RH SSO Administration console](http://localhost:8080/auth) 
+
+* To access the Spring Boot web application, open the following link in your browser `http://localhost:8083/`
+
+* This will display the web application landing page. Click on the link **My Publications**
+
+* If you are not logged in, you will be redirected to the RH SSO login page
+
+* Use the following user credentials **demo/demo** to login 
+  
+* Upon successful authentication, you will be presented with the list of publications returned by the emr-service
+
+* Click on the **Logout** link to logout the user session
+
+* Verify that the user session has been invalidated using the [RH SSO admin console](http://localhost:8080/auth)
+
+* Use the following link to test the offline token `http://localhost:8083/offline`
+
+* This url will make use of the offline token from the file store in order to generate a new access token. This newly generated access token will be passed as a bearer in the request header to make the REST call to the emr-service in order fetch the list of publications
+
+* If you are able to successfully see the list of publications, you were able to successfully test the offline access implementation
+		
+
 ## Docker/Ansible
 It is possible to deploy the application as a Docker container using Ansible.
 
