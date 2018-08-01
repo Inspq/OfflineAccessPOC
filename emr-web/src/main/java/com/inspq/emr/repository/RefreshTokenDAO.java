@@ -1,23 +1,4 @@
-/*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates
- * and other contributors as indicated by the @author tags.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.inspq.emr.repository;
-
-import org.keycloak.common.util.StreamUtil;
 
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
@@ -26,21 +7,30 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import org.keycloak.common.util.StreamUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import com.inspq.emr.controller.PublicationController;
+
 /**
  * Very simple DAO, which stores/loads just one token per whole application into file in tmp directory. Useful just for example purposes.
  * In real environment, token should be stored in database.
  * 
  */
+@Component
 public class RefreshTokenDAO {
+	
+	Logger logger = LoggerFactory.getLogger(PublicationController.class);
+	
+	public static final String FILE = System.getProperty("java.io.tmpdir") + "/offline-access-poc";
 
-    public static final String FILE = System.getProperty("java.io.tmpdir") + "/offline-access-portal";
-
-    public static void saveToken(final String token) throws IOException {
-    	System.out.println("Inside Save token method");
-        PrintWriter writer = null;
+    public void saveToken(final String token) throws IOException {
+    	PrintWriter writer = null;
         try {
-        	System.out.println("File is located at: " + FILE);
-            writer = new PrintWriter(new BufferedWriter(new FileWriter(FILE)));
+        	logger.debug("Storing offline token in the file: " + FILE);
+        	writer = new PrintWriter(new BufferedWriter(new FileWriter(FILE)));
             writer.print(token);
         } finally {
             if (writer != null) {
@@ -49,9 +39,10 @@ public class RefreshTokenDAO {
         }
     }
 
-    public static String loadToken() throws IOException {
+    public String loadToken() throws IOException {
         FileInputStream fis = null;
         try {
+        	logger.debug("Loading offline token from the file: " + FILE);
             fis = new FileInputStream(FILE);
             return StreamUtil.readString(fis);
         } catch (FileNotFoundException fnfe) {

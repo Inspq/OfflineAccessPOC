@@ -10,7 +10,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.keycloak.KeycloakPrincipal;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.AdapterDeploymentContext;
 import org.keycloak.adapters.KeycloakDeployment;
@@ -19,25 +18,19 @@ import org.keycloak.adapters.spi.AuthenticationError;
 import org.keycloak.adapters.spi.HttpFacade;
 import org.keycloak.adapters.spi.LogoutError;
 import org.keycloak.jose.jws.JWSInputException;
-import org.keycloak.representations.AccessToken;
-import org.keycloak.representations.RefreshToken;
-import org.keycloak.util.TokenUtil;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.inspq.emr.repository.RefreshTokenDAO;
 
 @Component
 public class KeycloakUtil {
 	
+	@Autowired
+	RefreshTokenDAO refreshTokenDAO;
+	
 	public String getAccessToken(HttpServletRequest req) {
 		RefreshableKeycloakSecurityContext ctx = (RefreshableKeycloakSecurityContext) req.getAttribute(KeycloakSecurityContext.class.getName());
-		System.out.println("Access token is " + ctx.getTokenString());
 		return ctx.getTokenString();
 	}
 	
@@ -54,12 +47,7 @@ public class KeycloakUtil {
 	public void storeToken(HttpServletRequest req) throws IOException, JWSInputException {
         RefreshableKeycloakSecurityContext ctx = (RefreshableKeycloakSecurityContext) req.getAttribute(KeycloakSecurityContext.class.getName());
         String refreshToken = ctx.getRefreshToken();
-        System.out.println("Refresh token to be saved is \n" + refreshToken);
-        RefreshTokenDAO.saveToken(refreshToken);
-
-        RefreshToken refreshTokenDecoded = TokenUtil.getRefreshToken(refreshToken);
-        Boolean isOfflineToken = refreshTokenDecoded.getType().equals(TokenUtil.TOKEN_TYPE_OFFLINE);
-        req.setAttribute("isOfflineToken", isOfflineToken);
+        refreshTokenDAO.saveToken(refreshToken);
     }
 	
 	private HttpFacade getFacade(final HttpServletRequest servletRequest) {

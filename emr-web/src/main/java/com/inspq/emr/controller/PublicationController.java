@@ -11,7 +11,10 @@ import javax.servlet.http.HttpServletRequest;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.ServerRequest;
 import org.keycloak.representations.AccessTokenResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,13 +31,21 @@ import com.inspq.emr.repository.RefreshTokenDAO;
 import com.inspq.emr.util.KeycloakUtil;
 
 public @Controller
-class ProductController {
+class PublicationController {
+	
+	Logger logger = LoggerFactory.getLogger(PublicationController.class);
 	
 	@Autowired
 	ServletContext servletContext;
 	
 	@Autowired
 	KeycloakUtil keycloakUtil;
+	
+	@Autowired
+	RefreshTokenDAO refreshTokenDAO;
+	
+	@Value("${publications.endpoint}")
+	private String publicationsEndpoint;
 	
 	@GetMapping(path = "/publications")
 	public String getProducts(Model model, HttpServletRequest request) throws Exception {
@@ -49,8 +60,7 @@ class ProductController {
 
 	@GetMapping(path = "/offline")
 	public String getEmr(Model model, HttpServletRequest request) throws Exception {
-		String refreshToken = RefreshTokenDAO.loadToken();
-		System.out.println("Refresh token to be loaded is \n" + refreshToken);
+		String refreshToken = refreshTokenDAO.loadToken();
 		String result = loadOfflinePublicationsData(request, refreshToken, servletContext);
 		
 		ObjectMapper mapper = new ObjectMapper();
@@ -63,41 +73,24 @@ class ProductController {
         // Retrieve accessToken first with usage of refresh (offline) token from DB
         String accessToken = null;
         try {
+        	logger.info("Retrieve access token using offline token from DB");
             KeycloakDeployment deployment = keycloakUtil.getDeployment(req, servletContext);
             AccessTokenResponse response = ServerRequest.invokeRefresh(deployment, refreshToken);
             accessToken = response.getToken();
-            
-            System.out.println("New access token is " + accessToken);
 
             // Uncomment this when you use revokeRefreshToken for realm. In that case each offline token can be used just once. So at this point, you need to
             // save new offline token into DB
             // RefreshTokenDAO.saveToken(response.getRefreshToken());
         } catch (ServerRequest.HttpFailure failure) {
+        	logger.error("Failed to refresh token" + failure.getCause());
             return "Failed to refresh token. Status from auth-server request: " + failure.getStatus() + ", Error: " + failure.getError();
         }
 
-        HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set("Authorization", "Bearer "+ accessToken);
-		
-		HttpEntity<String> entity = new HttpEntity<String>(null, headers);
-		
-		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<List<String>> response =
-		        restTemplate.exchange("http://localhost:8082/emr/publications",
-		                    HttpMethod.GET, entity, new ParameterizedTypeReference<List<String>>() {
-		            });
-		
-		List<String> list = response.getBody();
-		System.out.println("Publication response: " + list);
-		
-		ObjectMapper mapper = new ObjectMapper();
-		return mapper.writeValueAsString(list);
+        return loadPublicationsData(req, accessToken);
     }
 	
 	
 	private String loadPublicationsData(HttpServletRequest req, String accessToken) throws ServletException, IOException {
-        // Retrieve accessToken first with usage of refresh (offline) token from DB
         HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.set("Authorization", "Bearer "+ accessToken);
@@ -106,12 +99,12 @@ class ProductController {
 		
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<List<String>> response =
-		        restTemplate.exchange("http://localhost:8082/emr/publications",
+		        restTemplate.exchange(publicationsEndpoint,
 		                    HttpMethod.GET, entity, new ParameterizedTypeReference<List<String>>() {
 		            });
 		
 		List<String> list = response.getBody();
-		System.out.println("Publication response: " + list);
+		logger.debug("Publication response from EMR service: " + list);
 		
 		ObjectMapper mapper = new ObjectMapper();
 		return mapper.writeValueAsString(list);
