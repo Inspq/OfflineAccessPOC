@@ -1,6 +1,7 @@
 #!/usr/bin/env groovy
 pipeline {
     agent any
+    triggers { pollSCM('*/30 * * * *') }
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
         disableConcurrentBuilds()
