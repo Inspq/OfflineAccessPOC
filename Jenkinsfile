@@ -37,7 +37,7 @@ pipeline {
 		    	WEB_ARTIFACT = emrWeb.getArtifactId().toLowerCase()
 			}
             steps {
-                sh "docker build --build-arg APP_VERSION=${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/${SVC_ARTIFACT}:${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/${SVC_ARTIFACT}:latest ."
+                sh "docker build --build-arg APP_VERSION=${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/${SVC_ARTIFACT}:${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/${SVC_ARTIFACT}:latest emr-service"
                 sh "docker push nexus3.inspq.qc.ca:5000/inspq/${SVC_ARTIFACT}:${VERSION}"
                 sh "docker push nexus3.inspq.qc.ca:5000/inspq/${SVC_ARTIFACT}:latest"
                 sh "docker build --build-arg APP_VERSION=${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/${WEB_ARTIFACT}:${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/${WEB_ARTIFACT}:latest emr-web"
