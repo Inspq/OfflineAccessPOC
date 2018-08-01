@@ -22,11 +22,11 @@ pipeline {
                 }
             }
         }
-        stage ("Déployer les artifacts sur le serveur Nexus") {
-            steps {
-                sh "mvn deploy -Dmaven.install.skip=true -Dmaven.test.skip=true"
-            }
-        }
+//        stage ("Déployer les artifacts sur le serveur Nexus") {
+//            steps {
+//                sh "mvn deploy -Dmaven.install.skip=true -Dmaven.test.skip=true"
+//            }
+//        }
         stage ("Package offlineAccess Docker image") {
             environment {
 			    offlineAccess = readMavenPom file: 'pom.xml'
