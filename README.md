@@ -105,15 +105,16 @@ To build the docker image, execute the following commands for the root directory
 	VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
 	# Build the Docker image
 	docker build --build-arg APP_VERSION=${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/emr-service:${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/emr-service:latest emr-service
+	docker build --build-arg APP_VERSION=${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/emr-web:${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/emr-web:latest emr-web
 	
 ### Deploy a container from Docker Image
 
 Execute the deploy.yml playbook using this command:
 
-	ansible-plabook -i LOCAL/LOCAL.hosts deploy.yml
+	ansible-playbook -i LOCAL/LOCAL.hosts deploy.yml
 	
 It is possible to override the defaults Keycloak port, admin user and admin password using the following command:
 
-	ansible-plabook -i LOCAL/LOCAL.hosts -e keycloak_url=http://hostname:newport -e keycloak_user=newuser -e keycloak_password=newPassword deploy.yml
+	ansible-playbook -i LOCAL/LOCAL.hosts -e keycloak_url=http://hostname:newport -e keycloak_user=newuser -e keycloak_password=newPassword deploy.yml
 	
 The playbook need a Keycloak user/password to create the client et retrieve his client Secret.

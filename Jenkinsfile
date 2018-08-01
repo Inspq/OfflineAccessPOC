@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage ("emr-service build") {
             steps {
-                sh "mvn clean install -Pproduction"
+                sh "mvn clean install"
             }
             post {
                 success {
@@ -31,12 +31,17 @@ pipeline {
 			    offlineAccess = readMavenPom file: 'pom.xml'
 		    	VERSION = offlineAccess.getVersion()
 		    	emrService = readMavenPom file: 'emr-service/pom.xml'
-		    	ARTIFACT = emrService.getArtifactId().toLowerCase()
+		    	SVC_ARTIFACT = emrService.getArtifactId().toLowerCase()
+		    	emrWeb = readMavenPom file: 'emr-web/pom.xml'
+		    	WEB_ARTIFACT = emrWeb.getArtifactId().toLowerCase()
 			}
             steps {
-                sh "docker build --build-arg APP_VERSION=${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/${ARTIFACT}:${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/${ARTIFACT}:latest ."
-                sh "docker push nexus3.inspq.qc.ca:5000/inspq/${ARTIFACT}:${VERSION}"
-                sh "docker push nexus3.inspq.qc.ca:5000/inspq/${ARTIFACT}:latest"
+                sh "docker build --build-arg APP_VERSION=${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/${SVC_ARTIFACT}:${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/${SVC_ARTIFACT}:latest ."
+                sh "docker push nexus3.inspq.qc.ca:5000/inspq/${SVC_ARTIFACT}:${VERSION}"
+                sh "docker push nexus3.inspq.qc.ca:5000/inspq/${SVC_ARTIFACT}:latest"
+                sh "docker build --build-arg APP_VERSION=${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/${WEB_ARTIFACT}:${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/${WEB_ARTIFACT}:latest emr-web"
+                sh "docker push nexus3.inspq.qc.ca:5000/inspq/${WEB_ARTIFACT}:${VERSION}"
+                sh "docker push nexus3.inspq.qc.ca:5000/inspq/${WEB_ARTIFACT}:latest"
             }
         }
     }
