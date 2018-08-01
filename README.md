@@ -71,3 +71,49 @@ health
 info
 `http://localhost:8081/actuator/info`
 	
+## Docker/Ansible
+It is possible to deploy the application as a Docker container using Ansible.
+
+### Pre-req
+
+To be able to execute the Ansible playbook, the INSPQ Keycloak modules must be used. 
+
+First, clone the Github repository:
+
+	git clone https://github.com/Inspq/ansible.git
+	
+Checkout the inspq-2.4.01 branch
+
+	cd ansible
+	git checkout inspq-2.4.2.0-1
+
+Source the Python Env
+
+	source hacking/env-setup	
+
+Docker must be installed on the machine and your user must be in the docker group (/etc/group)
+
+Keycloak should be running on port 18081
+The keycloak admin user should be admin
+The admin password should be admin
+
+### Build the Docker image
+
+To build the docker image, execute the following commands for the root directory of the project. Those steps must be done after the app have been build with maven (mvn clean install).
+
+	# Read artifact version
+	VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
+	# Build the Docker image
+	docker build --build-arg APP_VERSION=${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/emr-service:${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/emr-service:latest emr-service
+	
+### Deploy a container from Docker Image
+
+Execute the deploy.yml playbook using this command:
+
+	ansible-plabook -i LOCAL/LOCAL.hosts deploy.yml
+	
+It is possible to override the defaults Keycloak port, admin user and admin password using the following command:
+
+	ansible-plabook -i LOCAL/LOCAL.hosts -e keycloak_url=http://hostname:newport -e keycloak_user=newuser -e keycloak_password=newPassword deploy.yml
+	
+The playbook need a Keycloak user/password to create the client et retrieve his client Secret.
