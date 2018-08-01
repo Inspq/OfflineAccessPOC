@@ -13,7 +13,7 @@ keycloak:
   ssl-required: external
   resource: emr-service
   credentials:
-    secret: 3501a45b-b065-4a1f-a608-5bb0b6b08e7d
+    secret: 9545aa56-a747-4c0e-96b6-667d16c13863
   security-constraints[0]:
     authRoles[0]: user
     securityCollections[0]:
