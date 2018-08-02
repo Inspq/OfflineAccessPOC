@@ -16,6 +16,7 @@
       - name: user
         description: "EMR Service User"
         composite: false
+    emrservice_publications_endpoint: "{{ emrservice_url }}/emr/publications"
     emrweb_docker_image: nexus3.inspq.qc.ca:5000/inspq/emr-web
     emrweb_oidc_client_id: "{{ emrweb_container_name | default('emrweb') }}"
     emrweb_oidc_client_name: Emr-Web
@@ -106,10 +107,16 @@
       redirectUris : "{{ emrweb_oidc_client_redirect_uris }}"
       webOrigins: "{{ emrweb_oidc_client_webOrigins | default([]) }}"
       directAccessGrantsEnabled: True
-      publicClient: True
+      #publicClient: True
       roles: "{{ emrweb_keycloak_roles | default([]) }}"
     register: emrweb_keycloak_client
     when:  keycloak_url is defined and keycloak_user is defined and keycloak_password is defined
+    run_once: true
+
+  - name: Retrieve the WEB client secret
+    set_fact:
+      emrweb_oidc_client_secret: "{{emrweb_keycloak_client.ansible_facts.clientSecret.value}}"
+    when:  emrweb_keycloak_client is defined
     run_once: true
 
   - name: Create Web Docker container 
@@ -125,6 +132,9 @@
         "KEYCLOAK_URL": "{{ keycloak_url }}"
         "KEYCLOAK_REALM": "{{ keycloak_realm }}"
         "KEYCLOAK_CLIENT_ID": "{{ emrweb_oidc_client_id | default('emrweb') }}"
+        "KEYCLOAK_CLIENT_SECRET": "{{ emrweb_oidc_client_secret }}"
         "KEYCLOAK_ENABLED": "{{ keycloak_enabled | default(True) }}"
         "DEBUG_PORT": "{{ debug_port | default(0) }}"
+        "EMR_SERVICE_PUBLICATIONS_ENDPOINT": "{{ emrservice_publications_endpoint | default('http://localhost:8082/emr/publications') }}"
+        
   

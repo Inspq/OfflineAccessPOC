@@ -46,6 +46,12 @@ class PublicationController {
 	
 	@Value("${publications.endpoint}")
 	private String publicationsEndpoint;
+
+	@Value("${keycloak.auth-server-url}")
+	private String keycloakAuthServerUrl;
+	
+	@Value("${keycloak.realm}")
+	private String keycloakRealm;
 	
 	@GetMapping(path = "/publications")
 	public String getProducts(Model model, HttpServletRequest request) throws Exception {
@@ -54,7 +60,12 @@ class PublicationController {
 		
 		ObjectMapper mapper = new ObjectMapper();
 		model.addAttribute("publications", Arrays.asList(mapper.readValue(result, String[].class)));
-		
+		String logoutURL = "";
+		if (keycloakAuthServerUrl != null) {
+			logoutURL = keycloakAuthServerUrl + "/realms/" + keycloakRealm + "/protocol/openid-connect/logout?redirect_uri=http://localhost:8083";
+		}
+		model.addAttribute("logout_url", logoutURL);
+
 		return "publications";
 	}
 
@@ -65,6 +76,7 @@ class PublicationController {
 		
 		ObjectMapper mapper = new ObjectMapper();
 		model.addAttribute("publications", Arrays.asList(mapper.readValue(result, String[].class)));
+		model.addAttribute("logout_url", "");
 		
 		return "publications";
 	}

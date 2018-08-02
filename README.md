@@ -101,4 +101,4 @@ It is possible to override the defaults Keycloak port, admin user and admin pass
 
 	ansible-playbook -i LOCAL/LOCAL.hosts -e keycloak_url=http://hostname:newport -e keycloak_user=newuser -e keycloak_password=newPassword deploy.yml
 	
-The playbook need a Keycloak user/password to create the client et retrieve his client Secret.
+The playbook need a Keycloak user/password to create the client and retrieve his client Secret.
