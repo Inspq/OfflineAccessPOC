@@ -55,7 +55,8 @@ class PublicationController {
 		
 		ObjectMapper mapper = new ObjectMapper();
 		model.addAttribute("publications", Arrays.asList(mapper.readValue(result, String[].class)));
-
+		
+		//Logout URL builder
 		KeycloakUriBuilder logoutBuilder = keycloakUtil.getDeployment(request, servletContext).getLogoutUrl();
 		String logoutUrl =  KeycloakUriBuilder.fromUri(logoutBuilder.getScheme()+ "://" + logoutBuilder.getHost() + ":" + logoutBuilder.getPort() + logoutBuilder.getPath())
 				.queryParam("redirect_uri", env.getProperty("emrweb.landingPage")).build(env.getProperty("keycloak.realm")).toString();

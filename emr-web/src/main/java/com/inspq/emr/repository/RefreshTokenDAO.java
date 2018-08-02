@@ -46,6 +46,7 @@ public class RefreshTokenDAO {
             fis = new FileInputStream(FILE);
             return StreamUtil.readString(fis);
         } catch (FileNotFoundException fnfe) {
+        	logger.error("Offline token not found in the file system " + fnfe);
             return null;
         } finally {
             if (fis != null) {
