@@ -22,8 +22,17 @@ here are the requirements:
 	Web UI secured by Keycloak a user can use to call the REST API
 	A Springboot REST API secured by Keycloak Springboot adapter.
 	A username and password in Keycloak to log in the application. 
-	
-### Prerequisites for the demo
+
+### RH SSO considerations for Offline Access Implementation:
+1. To be able to issue an offline token, users need to have the role mapping for the realm-level role offline_access. 
+2. Clients also need to have offline_access role in their scope.
+3. The client can request an offline token by adding the parameter scope=offline_access when sending authorization request to Red Hat Single Sign-On. 
+4. The Red Hat Single Sign-On OIDC client adapter automatically adds this parameter when you use it to access secured URL of your application (i.e. http://localhost:8080/customer-portal/secured?scope=offline_access). 
+5. The Direct Access Grant and Service Accounts also support offline tokens if you include scope=offline_access in the body of the authentication request.
+
+Refer to the [RH SSO documentation](https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.2/html-single/server_administration_guide/#offline-access) for more details
+
+### Prerequisites for the offline access demo
 * RH SSO 7.2.3 is up & running. For instructions, refer to [RH SSO Installation Guide](https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.2/html/server_installation_and_configuration_guide/installation#installing_rh_sso_from_a_zip_file). 
 	
 * Spring Boot API emr-service is up & running. For instructions, refer to [EMR API readme](emr-service/README.md)
@@ -44,15 +53,15 @@ Follow the below steps for the RH SSO offline access demo
   
 * Upon successful authentication, you will be presented with the list of publications returned by the emr-service
 
-* Click on the **Logout** link to logout the user session
+* Click on the **Logout** link to logout the user session. This should take you back to the home page.
 
 * Verify that the user session has been invalidated using the [RH SSO admin console](http://localhost:8080/auth)
 
-* Use the following link to test the offline token `http://localhost:8083/offline`
+* Now, you can click on the link **Offline Access to My publications** to test the offline access
 
-* This url will make use of the offline token from the file store in order to generate a new access token. This newly generated access token will be passed as a bearer in the request header to make the REST call to the emr-service in order fetch the list of publications
+* This link will call 'http://localhost:8083/offline' which will retrieve the stored offline token from the file store and generate a new access token. Once a new access token is generated, it will be passed as a bearer token in the request header to make the REST call to the emr-service in order fetch the list of publications
 
-* If you are able to successfully see the list of publications, you were able to successfully test the offline access implementation
+* If you are able to see the list of publications, you were able to successfully test the offline access implementation
 		
 
 ## Docker/Ansible
