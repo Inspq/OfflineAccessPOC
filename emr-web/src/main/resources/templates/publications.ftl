@@ -7,5 +7,7 @@
 </#list>
 </ul>
 <br>
-<a href="${logout_url}">Logout</a>
+<#if logoutUrl??>
+<a href="${logoutUrl}">Logout</a>
+</#if>
 </html>
