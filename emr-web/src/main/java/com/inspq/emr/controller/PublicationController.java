@@ -10,12 +10,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.ServerRequest;
+import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.representations.AccessTokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -44,14 +45,8 @@ class PublicationController {
 	@Autowired
 	RefreshTokenDAO refreshTokenDAO;
 	
-	@Value("${publications.endpoint}")
-	private String publicationsEndpoint;
-
-	@Value("${keycloak.auth-server-url}")
-	private String keycloakAuthServerUrl;
-	
-	@Value("${keycloak.realm}")
-	private String keycloakRealm;
+	@Autowired
+    private Environment env; 
 	
 	@GetMapping(path = "/publications")
 	public String getProducts(Model model, HttpServletRequest request) throws Exception {
@@ -60,11 +55,12 @@ class PublicationController {
 		
 		ObjectMapper mapper = new ObjectMapper();
 		model.addAttribute("publications", Arrays.asList(mapper.readValue(result, String[].class)));
-		String logoutURL = "";
-		if (keycloakAuthServerUrl != null) {
-			logoutURL = keycloakAuthServerUrl + "/realms/" + keycloakRealm + "/protocol/openid-connect/logout?redirect_uri=http://localhost:8083";
-		}
-		model.addAttribute("logout_url", logoutURL);
+		
+		//Logout URL builder
+		KeycloakUriBuilder logoutBuilder = keycloakUtil.getDeployment(request, servletContext).getLogoutUrl();
+		String logoutUrl =  KeycloakUriBuilder.fromUri(logoutBuilder.getScheme()+ "://" + logoutBuilder.getHost() + ":" + logoutBuilder.getPort() + logoutBuilder.getPath())
+				.queryParam("redirect_uri", env.getProperty("emrweb.landingPage")).build(env.getProperty("keycloak.realm")).toString();
+		model.addAttribute("logoutUrl", logoutUrl);
 
 		return "publications";
 	}
@@ -76,7 +72,9 @@ class PublicationController {
 		
 		ObjectMapper mapper = new ObjectMapper();
 		model.addAttribute("publications", Arrays.asList(mapper.readValue(result, String[].class)));
-		model.addAttribute("logout_url", "");
+		
+		//Delete offline token
+		refreshTokenDAO.deleteToken();
 		
 		return "publications";
 	}
@@ -111,7 +109,7 @@ class PublicationController {
 		
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<List<String>> response =
-		        restTemplate.exchange(publicationsEndpoint,
+		        restTemplate.exchange(env.getProperty("publications.endpoint"),
 		                    HttpMethod.GET, entity, new ParameterizedTypeReference<List<String>>() {
 		            });
 		

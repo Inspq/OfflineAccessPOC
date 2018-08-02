@@ -1,11 +1,13 @@
 <#import "/spring.ftl" as spring>
 <html>
-<h1>My publications</h1>
+<h2>My publications</h2>
 <ul>
 <#list publications as publication>
     <li>${publication}</li>
 </#list>
 </ul>
 <br>
-<a href="${logout_url}">Logout</a>
+<#if logoutUrl??>
+<a href="${logoutUrl}">Logout</a>
+</#if>
 </html>
