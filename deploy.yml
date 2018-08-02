@@ -1,6 +1,7 @@
 - hosts: emr-service
   remote_user: root
   vars:
+    keycloak_realm: demo
     emrservice_docker_image: nexus3.inspq.qc.ca:5000/inspq/emr-service
     emrservice_oidc_client_id: "{{ emrservice_container_name | default('emrservice') }}"
     emrservice_oidc_client_name: Emr-Service
@@ -38,6 +39,45 @@
       description: "Offline POC User Role"
       composite: false
   tasks:
+  - name: Login to Keycloak
+    uri:
+      url: "{{ keycloak_url }}/auth/realms/master/protocol/openid-connect/token"
+      method: POST
+      body_format: raw
+      body:
+        client_id=admin-cli&username={{ keycloak_user }}&password={{ keycloak_password }}&grant_type=password
+    register: keycloak_token
+    
+  - name: Register Token
+    set_fact:
+      keycloak_access_token: "{{ keycloak_token.json.access_token }}"
+
+  - name: Does demo realm already exist
+    uri:
+      url: "{{ keycloak_url }}/auth/admin/realms/{{ keycloak_realm }}"
+      headers:
+        Authorization: Bearer {{ keycloak_access_token }}
+      method: GET
+    register: demo_realm
+    ignore_errors: True
+
+  - name: Copy realm demo realm json file
+    copy:
+      src: demo-realm.json
+      dest: /tmp/demo-realm.json
+    when: demo_realm.status == 404
+    
+  - name: Create demo realm if it does not exist
+    uri:
+      url: "{{ keycloak_url }}/auth/admin/realms/"
+      headers:
+        Authorization: Bearer {{ keycloak_access_token }}
+      method: POST
+      body_format: json
+      body: "{{ lookup('file','/tmp/demo-realm.json') }}"
+      status_code: 201
+    when: demo_realm.status == 404
+      
   - name: Create Realm roles
     keycloak_role: 
       realm: "{{ item.realm | default ('master') }}"
