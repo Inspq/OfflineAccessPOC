@@ -1,6 +1,7 @@
 package com.inspq.emr.repository;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -52,6 +53,17 @@ public class RefreshTokenDAO {
             if (fis != null) {
                 fis.close();
             }
+        }
+    }
+    
+    public void deleteToken() throws IOException {
+    	File file = new File(FILE);
+        try {
+        	logger.debug("Storing offline token in the file: " + FILE);
+        	if(file.delete())
+        		logger.info(FILE + " has been successfully deleted. Offline token is unavailable now");
+        } catch (Exception e) {
+        	logger.error("Exception occured! " + e);
         }
     }
 }

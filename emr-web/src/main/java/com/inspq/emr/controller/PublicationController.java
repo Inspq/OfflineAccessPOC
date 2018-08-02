@@ -73,6 +73,9 @@ class PublicationController {
 		ObjectMapper mapper = new ObjectMapper();
 		model.addAttribute("publications", Arrays.asList(mapper.readValue(result, String[].class)));
 		
+		//Delete offline token
+		refreshTokenDAO.deleteToken();
+		
 		return "publications";
 	}
 	
