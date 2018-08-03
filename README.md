@@ -38,10 +38,13 @@ Refer to the [RH SSO documentation](https://access.redhat.com/documentation/en-u
 * Spring Boot API emr-service is up & running. For instructions, refer to [EMR API readme](emr-service/README.md)
 
 * Spring Boot Web Application emr-web is up & running. For instructions, refer to [EMR Web App readme](emr-web/README.md)
+
+* Create a new realm **demo** by importing demo-realm.json in [RH SSO Administration console](http://localhost:8080/auth) 
+
+* Or use the Ansible/Docker instructions below to create the keycloak, emr-service and emr-web containers. The scripts will also create the demo realm.
 	
 ### Demo of offline access implementation in RH SSO
 Follow the below steps for the RH SSO offline access demo
-* Create a new realm **demo** by importing demo-realm.json in [RH SSO Administration console](http://localhost:8080/auth) 
 
 * To access the Spring Boot web application, open the following link in your browser `http://localhost:8083/`
 

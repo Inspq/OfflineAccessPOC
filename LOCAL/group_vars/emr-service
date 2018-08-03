@@ -2,11 +2,11 @@ keycloak_url: http://{{ ansible_hostname }}.inspq.qc.ca:18081
 keycloak_user: admin
 keycloak_password: admin
 
-emrservice_container_name: emrservice
+emrservice_container_name: emr-service
 emrservice_external_port: 8082
 emrservice_actuator_external_port: 8081
 emrservice_url: http://{{ ansible_hostname }}.inspq.qc.ca:{{ emrservice_external_port }}
 
-emrweb_container_name: emrweb
+emrweb_container_name: emr-web
 emrweb_external_port: 8083
 emrweb_url: http://{{ ansible_hostname }}.inspq.qc.ca:{{ emrweb_external_port }}
