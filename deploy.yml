@@ -2,7 +2,7 @@
   remote_user: root
   vars:
     keycloak_realm: demo
-    emrservice_docker_image: nexus3.inspq.qc.ca:5000/inspq/emr-service
+    emrservice_docker_image: inspq/emr-service
     emrservice_oidc_client_id: "{{ emrservice_container_name | default('emrservice') }}"
     emrservice_oidc_client_name: Emr-Service
     emrservice_oidc_client_description: Demo API app for offline access
@@ -18,7 +18,7 @@
         description: "EMR Service User"
         composite: false
     emrservice_publications_endpoint: "{{ emrservice_url }}/emr/publications"
-    emrweb_docker_image: nexus3.inspq.qc.ca:5000/inspq/emr-web
+    emrweb_docker_image: inspq/emr-web
     emrweb_oidc_client_id: "{{ emrweb_container_name | default('emrweb') }}"
     emrweb_oidc_client_name: Emr-Web
     emrweb_oidc_client_description: Demo Web app for offline access
@@ -117,11 +117,24 @@
     when:  emrservice_keycloak_client is defined
     run_once: true
 
+  - name: define docker images with registry
+    set_fact:
+      registry_emrservice_docker_image: "{{ docker_registry }}/{{ emrservice_docker_image }}"
+      registry_emrweb_docker_image: "{{ docker_registry }}/{{ emrweb_docker_image }}"
+    when: docker_registry is defined and docker_registry
+
+  - name: define docker images without registry
+    set_fact:
+      registry_emrservice_docker_image: "{{ emrservice_docker_image }}"
+      registry_emrweb_docker_image: "{{ emrweb_docker_image }}"
+    when: docker_registry is not defined or not docker_registry
+    
+    
   - name: Create API Docker container 
     docker_container:
       name: "{{ emrservice_container_name | default('emrservice') }}"
       hostname: "{{ emrservice_container_name | default('emrservice') }}"      
-      image: "{{ emrservice_docker_image }}:{{ docker_image_version }}"
+      image: "{{ registry_emrservice_docker_image }}:{{ docker_image_version }}"
       state: started
       restart_policy: unless-stopped
       ports:
@@ -163,7 +176,7 @@
     docker_container:
       name: "{{ emrweb_container_name | default('emrweb') }}"
       hostname: "{{ emrweb_container_name | default('emrweb') }}"      
-      image: "{{ emrweb_docker_image }}:{{ docker_image_version }}"
+      image: "{{ registry_emrweb_docker_image }}:{{ docker_image_version }}"
       state: started
       restart_policy: unless-stopped
       ports:

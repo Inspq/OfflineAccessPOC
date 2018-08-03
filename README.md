@@ -8,9 +8,9 @@ Here are the steps to demonstrate:
 	2) He is redirected to Keycloak to authenticate.
 	3) He do the authentication.
 	4) He is redirected to the web UI.
-	5) He request an offline token
+	5) The application request an offline token
 	6) The application persists the token for 24 hours.
-	7) a couple of hours later, the request is sent to the API using the offline token
+	7) After a logout, the user can access without authentication to the offline section of the web application to do a request to the API using the offline token
 	8) We can see in the log that the request have been done using the offline token.
 
 Requirements
@@ -18,7 +18,7 @@ Requirements
 
 here are the requirements:
 
-	A Keycloak server where we will create clients for a web UI and an REST API
+	A Keycloak server securing the web UI and the REST API
 	Web UI secured by Keycloak a user can use to call the REST API
 	A Springboot REST API secured by Keycloak Springboot adapter.
 	A username and password in Keycloak to log in the application. 
@@ -67,7 +67,7 @@ Follow the below steps for the RH SSO offline access demo
 ## Docker/Ansible
 It is possible to deploy the application as a Docker container using Ansible.
 
-### Pre-req
+### Ansible configuration
 
 To be able to execute the Ansible playbook, the INSPQ Keycloak modules must be used. 
 
@@ -82,13 +82,20 @@ Checkout the inspq-2.4.01 branch
 
 Source the Python Env
 
-	source hacking/env-setup	
+	source hacking/env-setup
 
 Docker must be installed on the machine and your user must be in the docker group (/etc/group)
 
-Keycloak should be running on port 18081
-The keycloak admin user should be admin
-The admin password should be admin
+### Keycloak server
+You can install the Keycloak server using ansible script from the INSPQ Ansible repository using the following command:
+
+	ansible-playbook -i keycloak.hosts deploy-keycloak.yml
+	
+The server will run with the following parameter:
+
+	Exposed port for the keycloak server is 18081
+	The keycloak admin user is admin
+	The admin password is admin
 
 ### Build the Docker image
 
@@ -97,10 +104,10 @@ To build the docker image, execute the following commands for the root directory
 	# Read artifact version
 	VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
 	# Build the Docker image
-	docker build --build-arg APP_VERSION=${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/emr-service:${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/emr-service:latest emr-service
-	docker build --build-arg APP_VERSION=${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/emr-web:${VERSION} -t nexus3.inspq.qc.ca:5000/inspq/emr-web:latest emr-web
+	docker build --build-arg APP_VERSION=${VERSION} -t inspq/emr-service:${VERSION} -t inspq/emr-service:latest emr-service
+	docker build --build-arg APP_VERSION=${VERSION} -t inspq/emr-web:${VERSION} -t inspq/emr-web:latest emr-web
 	
-### Deploy a container from Docker Image
+### Deploy the containers from Docker Images
 
 Execute the deploy.yml playbook using this command:
 
