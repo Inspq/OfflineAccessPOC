@@ -1,6 +1,5 @@
 package com.inspq.emr.rest;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,7 @@ public class EmrResource {
 	@RequestMapping(value = "/publications", method = RequestMethod.GET, produces = "application/json")
 	public List<String> getPublications() {
 		
-		return Arrays.asList("Ethics", "Health Economics", "Immunization");
+		return service.getPublications();
 	}
 	
 

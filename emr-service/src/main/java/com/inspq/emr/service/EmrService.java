@@ -1,6 +1,7 @@
 package com.inspq.emr.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -25,6 +26,16 @@ public class EmrService {
 		app.setDescription("A new application");
 		list.add(app);
 		return list;
+	}
+	
+	/**
+	 * Returns a {@link List} of {@link String} 
+	 * 
+	 * 
+	 * @return
+	 */
+	public List<String> getPublications(){
+		return Arrays.asList("Ethics", "Health Economics", "Immunization");
 	}
 
 }
