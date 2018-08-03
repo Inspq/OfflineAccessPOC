@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 
 import org.keycloak.common.util.StreamUtil;
 import org.slf4j.Logger;
@@ -45,7 +46,7 @@ public class RefreshTokenDAO {
         try {
         	logger.debug("Loading offline token from the file: " + FILE);
             fis = new FileInputStream(FILE);
-            return StreamUtil.readString(fis);
+            return StreamUtil.readString(fis, StandardCharsets.UTF_8);
         } catch (FileNotFoundException fnfe) {
         	logger.error("Offline token not found in the file system " + fnfe);
             return null;
@@ -59,7 +60,7 @@ public class RefreshTokenDAO {
     public void deleteToken() throws IOException {
     	File file = new File(FILE);
         try {
-        	logger.debug("Storing offline token in the file: " + FILE);
+        	logger.debug("Deleting offline token in the file: " + FILE);
         	if(file.delete())
         		logger.info(FILE + " has been successfully deleted. Offline token is unavailable now");
         } catch (Exception e) {

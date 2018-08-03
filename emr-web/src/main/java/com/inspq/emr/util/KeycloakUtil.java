@@ -29,14 +29,14 @@ public class KeycloakUtil {
 	@Autowired
 	RefreshTokenDAO refreshTokenDAO;
 	
-	public String getAccessToken(HttpServletRequest req) {
-		RefreshableKeycloakSecurityContext ctx = (RefreshableKeycloakSecurityContext) req.getAttribute(KeycloakSecurityContext.class.getName());
+	public String getAccessToken(HttpServletRequest request) {
+		RefreshableKeycloakSecurityContext ctx = (RefreshableKeycloakSecurityContext) request.getAttribute(KeycloakSecurityContext.class.getName());
 		return ctx.getTokenString();
 	}
 	
-	public KeycloakDeployment getDeployment(HttpServletRequest servletRequest, ServletContext servletContext) throws ServletException {
+	public KeycloakDeployment getDeployment(HttpServletRequest request, ServletContext servletContext) throws ServletException {
         // The facade object is needed just if you have relative "auth-server-url" in keycloak.json. Otherwise you can call deploymentContext.resolveDeployment(null)
-		HttpFacade facade = getFacade(servletRequest);
+		HttpFacade facade = getFacade(request);
         AdapterDeploymentContext deploymentContext = (AdapterDeploymentContext) servletContext.getAttribute(AdapterDeploymentContext.class.getName());
         if (deploymentContext == null) {
             throw new ServletException("AdapterDeploymentContext not set");
@@ -50,7 +50,7 @@ public class KeycloakUtil {
         refreshTokenDAO.saveToken(refreshToken);
     }
 	
-	private HttpFacade getFacade(final HttpServletRequest servletRequest) {
+	private HttpFacade getFacade(final HttpServletRequest request) {
         return new HttpFacade() {
 
             @Override
@@ -61,32 +61,32 @@ public class KeycloakUtil {
 
                     @Override
                     public String getMethod() {
-                        return servletRequest.getMethod();
+                        return request.getMethod();
                     }
 
                     @Override
                     public String getURI() {
-                        return servletRequest.getRequestURL().toString();
+                        return request.getRequestURL().toString();
                     }
 
                     @Override
                     public String getRelativePath() {
-                        return servletRequest.getServletPath();
+                        return request.getServletPath();
                     }
 
                     @Override
                     public boolean isSecure() {
-                        return servletRequest.isSecure();
+                        return request.isSecure();
                     }
 
                     @Override
                     public String getQueryParamValue(String param) {
-                        return servletRequest.getParameter(param);
+                        return request.getParameter(param);
                     }
 
                     @Override
                     public String getFirstParam(String param) {
-                        return servletRequest.getParameter(param);
+                        return request.getParameter(param);
                     }
 
                     @Override
@@ -97,7 +97,7 @@ public class KeycloakUtil {
 
                     @Override
                     public String getHeader(String name) {
-                        return servletRequest.getHeader(name);
+                        return request.getHeader(name);
                     }
 
                     @Override
@@ -119,14 +119,14 @@ public class KeycloakUtil {
 
                         if (buffered) {
                             try {
-                                return inputStream = new BufferedInputStream(servletRequest.getInputStream());
+                                return inputStream = new BufferedInputStream(request.getInputStream());
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
                         }
 
                         try {
-                            return servletRequest.getInputStream();
+                            return request.getInputStream();
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -134,18 +134,18 @@ public class KeycloakUtil {
 
                     @Override
                     public String getRemoteAddr() {
-                        return servletRequest.getRemoteAddr();
+                        return request.getRemoteAddr();
                     }
 
                     @Override
                     public void setError(AuthenticationError error) {
-                        servletRequest.setAttribute(AuthenticationError.class.getName(), error);
+                        request.setAttribute(AuthenticationError.class.getName(), error);
 
                     }
 
                     @Override
                     public void setError(LogoutError error) {
-                        servletRequest.setAttribute(LogoutError.class.getName(), error);
+                        request.setAttribute(LogoutError.class.getName(), error);
                     }
 
                 };
